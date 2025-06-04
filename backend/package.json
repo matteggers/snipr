@@ -1,0 +1,28 @@
+{
+  "name": "snipr",
+  "version": "1.0.0",
+  "description": "A tool for ingesting the top tech news without all the clutter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matteggers/snipr.git"
+  },
+  "author": "Matthew Eggers",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matteggers/snipr/issues"
+  },
+  "homepage": "https://github.com/matteggers/snipr#readme",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.28.0"
+  }
+}
