@@ -1,0 +1,117 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f8f9fa;
+}
+
+.app-flex {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background: #22223b;
+  color: #fff;
+  padding: 32px 20px;
+  box-shadow: 2px 0 8px #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
+
+.sidebar button {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px 0;
+  background: #4a4e69;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sidebar button:hover {
+  background: #9a8c98;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px 5vw;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.article-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  margin: 24px 0;
+  padding: 24px 28px;
+  box-shadow: 0 2px 8px rgba(34,34,59,0.04);
+  transition: box-shadow 0.2s;
+}
+
+.article-card:hover {
+  box-shadow: 0 4px 16px rgba(34,34,59,0.10);
+}
+
+.article-card h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.3rem;
+  color: #22223b;
+}
+
+.article-card p {
+  color: #4a4e69;
+  margin-bottom: 18px;
+}
+
+.article-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.article-actions button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 5px;
+  background: #c9ada7;
+  color: #22223b;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.article-actions button:disabled {
+  background: #e0e0e0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.article-actions button:hover:not(:disabled) {
+  background: #9a8c98;
+  color: #fff;
+}
+
+h1 {
+  padding: 24px;
+  padding-bottom: 0px;
+  display: inline-block;
+  color: black;
+  border-bottom: 5px solid red;
+}

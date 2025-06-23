@@ -1,0 +1,117 @@
+require('dotenv').config();
+const express = require('express');
+const fetch = require('node-fetch');
+const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
+const api_key = process.env.SECRET_KEY;
+const NEWS_API_URL = `https://newsapi.org/v2/top-headlines?country=us&category=technology&apiKey=${api_key}`;
+
+const app = express();
+const port = process.env.PORT || 4000; // port for sql
+const Pool = new Pool();
+const NEWS_JSON_PATH = path.join(__dirname, 'tech_news.json');
+
+app.use(express.json()); // Add this to parse JSON bodies
+
+// Helper function to fetch news from NewsAPI and save to JSON
+async function fetchAndSaveNews() {
+  try {
+    const response = await fetch(NEWS_API_URL);
+    const data = await response.json();
+    fs.writeFileSync(NEWS_JSON_PATH, JSON.stringify(data, null, 2));
+    // TODO: Store in Postgres DB as well
+    return data;
+  } catch (err) {
+    console.error('Error fetching news:', err);
+    return null;
+  }
+}
+
+// Endpoint to check if API has been called today and return news
+app.get('/api/has-called-today', async (req, res) => {
+  // Check if the JSON file exists and is from today
+  if (fs.existsSync(NEWS_JSON_PATH)) {
+    const stats = fs.statSync(NEWS_JSON_PATH);
+    const fileDate = new Date(stats.mtime);
+    const today = new Date();
+    if (
+      fileDate.getDate() === today.getDate() &&
+      fileDate.getMonth() === today.getMonth() &&
+      fileDate.getFullYear() === today.getFullYear()
+    ) {
+      // File is from today, return its contents
+      const news = JSON.parse(fs.readFileSync(NEWS_JSON_PATH, 'utf-8'));
+      return res.json({ hasCalledToday: true, news });
+    }
+  }
+  // If not, fetch from NewsAPI, save, and return
+  const news = await fetchAndSaveNews();
+  if (news) {
+    return res.json({ hasCalledToday: false, news });
+  } else {
+    return res.status(500).json({ error: 'Failed to fetch news' });
+  }
+});
+
+// Endpoint to force fetch news from API (e.g., button click)
+app.post('/api/fetch-news', async (req, res) => {
+  // Always fetch from NewsAPI, save, and return
+  const news = await fetchAndSaveNews();
+  if (news) {
+    return res.json({ news });
+  } else {
+    return res.status(500).json({ error: 'Failed to fetch news' });
+  }
+});
+
+// Like an article
+app.post('/api/like', async (req, res) => {
+  const { article } = req.body;
+  try {
+    await Pool.query(
+      'INSERT INTO likes (title, description) VALUES ($1, $2) ON CONFLICT (title) DO NOTHING',
+      [article.title, article.description]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Like error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Dislike an article
+app.post('/api/dislike', async (req, res) => {
+  const { article } = req.body;
+  try {
+    await Pool.query(
+      'INSERT INTO dislikes (title, description) VALUES ($1, $2) ON CONFLICT (title) DO NOTHING',
+      [article.title, article.description]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Dislike error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Read later an article
+app.post('/api/read-later', async (req, res) => {
+  const { article } = req.body;
+  try {
+    await Pool.query(
+      'INSERT INTO read_later (title, description) VALUES ($1, $2) ON CONFLICT (title) DO NOTHING',
+      [article.title, article.description]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Read later error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+
