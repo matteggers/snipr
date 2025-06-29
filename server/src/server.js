@@ -31,6 +31,7 @@ const NEWS_JSON_PATH = path.join(__dirname, `${fileDate}.json`);
 
 app.use(express.json()); // Add this to parse JSON bodies
 
+// ONLY CALL WHEN C&B HAVE BEEN CONDUCTED
 // Helper function to fetch news from NewsAPI and save to JSON
 async function fetchAndSaveNews() {
   try {
@@ -49,16 +50,31 @@ async function fetchAndSaveNews() {
 // Endpoint to check if API has been called today and return news
 app.get('/api/has-called-today', async (req, res) => {
   // Check if the JSON file exists and is from today
+  // JSONS will be deleted after placed into sql so why are you checking lol
+
+      // Get todays date and query it
+    // PG gives dates like: "2025-06-23 15:11:16.973997"
+    const today = date_converter(new Date());
+    
+    const { rows } = await pool.query(
+      `SELECT * 
+        from snipr_articles 
+        WHERE createdat::created_at = $1`, 
+        [ today ]
+    );
+
+    if (rows.length > 0) {
+      console.log("API has already been called today");
+    } else {
+      fetchAndSaveNews();
+    }
+
   if (fs.existsSync(NEWS_JSON_PATH)) {
     const stats = fs.statSync(NEWS_JSON_PATH);
     const fileDate = new Date(stats.mtime);
-    const today = new Date();
-    if (
-      fileDate.getDate() === today.getDate() &&
-      fileDate.getMonth() === today.getMonth() &&
-      fileDate.getFullYear() === today.getFullYear()
-    ) {
+    {
       // File is from today, return its contents
+      // dont need this. need to call data from db.
       const news = JSON.parse(fs.readFileSync(NEWS_JSON_PATH, 'utf-8'));
       return res.json({ hasCalledToday: true, news });
     }
@@ -114,6 +130,7 @@ app.post('/api/dislike', async (req, res) => {
 });
 
 // Read later an article
+// FIXME Not in current pg instance
 app.post('/api/read-later', async (req, res) => {
   const { article } = req.body;
   try {
@@ -132,12 +149,27 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
+const date_converter = (js_date) => {
+  // PG gives dates like: "2025-06-23 15:11:16.973997" can I remove time?
+  // JS gives dates like: 2025-6-1. Need leading zeros for months and dates
+  const currentDate = new Date();
+  let month = currentDate.getMonth() + 1; // given as 0-11
+  const day = currentDate.getDate(); 
+  const year = currentDate.getFullYear();
+  month = (month < 10) ? ('0' + month) : month;
+
+  return (`${year}-${month}-${day}`);
+}
+
+
+
+
 /* 
   Call {has it been called today}. If not, pull data, place into json, read from json onto screen, write into SQL DB. Take feedback from user.
   TODO: If an article is disliked, remove it from user view
   Dislike existing style. Shouldn't directly call the API when asked, should check if a file exists. Or some table? Investigate
   UI also has "todays news" button on same screen that todays news is shown on. don't like that
   Currently have runtime errors (ReacT), errors parsing json data (not even running node or pg lol)
-
+  // I didn't even include an author column lol
 
 */
