@@ -1,23 +1,40 @@
 require('dotenv').config();
 const express = require('express');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // wont need this soon
+const axios = require('axios');
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 const api_key = process.env.SECRET_KEY;
+const pg_user = process.env.PG_USER;
+const pg_pass = process.env.PG_PASS;
+const db_name = process.env.DB_NAME;
 const NEWS_API_URL = `https://newsapi.org/v2/top-headlines?country=us&category=technology&apiKey=${api_key}`;
 
+const currentDate = new Date();
+const fileDate = currentDate.getFullYear() + '-' + currentDate.getDate(); // ex: YYYY-M-D, month doesnt automatically include leading zero for 0->9, same for day. 
+
 const app = express();
-const port = process.env.PORT || 4000; // port for sql
-const Pool = new Pool();
-const NEWS_JSON_PATH = path.join(__dirname, 'tech_news.json');
+const port = process.env.PORT || 4000; // port for node server
+
+const pool = new Pool({
+  host: 'localhost',
+  port: 5432,
+  database: db_name,
+  user: pg_user,
+  password: pg_pass,
+  max: 10,           
+  idleTimeoutMillis: 30000,  
+  connectionTimeoutMillis: 2000,
+});
+const NEWS_JSON_PATH = path.join(__dirname, `${fileDate}.json`);
 
 app.use(express.json()); // Add this to parse JSON bodies
 
 // Helper function to fetch news from NewsAPI and save to JSON
 async function fetchAndSaveNews() {
   try {
-    const response = await fetch(NEWS_API_URL);
+    const response = await axios.get(NEWS_API_URL);
     const data = await response.json();
     fs.writeFileSync(NEWS_JSON_PATH, JSON.stringify(data, null, 2));
     // TODO: Store in Postgres DB as well
@@ -28,6 +45,7 @@ async function fetchAndSaveNews() {
   }
 }
 
+// FIXME Don't need to call fileDate, can parse through the file name for that. 
 // Endpoint to check if API has been called today and return news
 app.get('/api/has-called-today', async (req, res) => {
   // Check if the JSON file exists and is from today
@@ -114,4 +132,12 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
+/* 
+  Call {has it been called today}. If not, pull data, place into json, read from json onto screen, write into SQL DB. Take feedback from user.
+  TODO: If an article is disliked, remove it from user view
+  Dislike existing style. Shouldn't directly call the API when asked, should check if a file exists. Or some table? Investigate
+  UI also has "todays news" button on same screen that todays news is shown on. don't like that
+  Currently have runtime errors (ReacT), errors parsing json data (not even running node or pg lol)
 
+
+*/
