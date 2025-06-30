@@ -36,7 +36,7 @@ app.use(express.json()); // Add this to parse JSON bodies
 async function fetchAndSaveNews() {
   try {
     const response = await axios.get(NEWS_API_URL);
-    const data = await response.json();
+    const data = await response.data;
     fs.writeFileSync(NEWS_JSON_PATH, JSON.stringify(data, null, 2));
     // TODO: Store in Postgres DB as well
     return data;
@@ -46,35 +46,38 @@ async function fetchAndSaveNews() {
   }
 }
 
-// FIXME Don't need to call fileDate, can parse through the file name for that. 
 // Endpoint to check if API has been called today and return news
 app.get('/api/has-called-today', async (req, res) => {
-  // Check if the JSON file exists and is from today
-  // JSONS will be deleted after placed into sql so why are you checking lol
-
     // Get todays date and query it
     // PG gives dates like: "2025-06-23 15:11:16.973997"
-    const today = date_converter(new Date());
-    
-    // this will get way less efficient (I think) if it were scaled to large numbers
-    const { rows } = await pool.query(
-      `SELECT * 
-        from snipr_articles 
-        WHERE createdat::created_at = $1`, 
-        [ today ]
-    );
 
-    if (rows.length > 0) {
-      console.log("API has already been called today");
-      // display the data
-    } else {
-        const news = await fetchAndSaveNews();
-      if (news) {
-        return res.json({ hasCalledToday: false, news });
+    const today = date_converter(new Date());
+    try {
+      const { rows } = await pool.query(
+      // this will get way less efficient (I think) if it were scaled to large numbers
+      `SELECT * 
+      from snipr_articles 
+      WHERE DATE(createdat) = $1`, 
+      [ today ]
+      );
+      if (rows.length > 0) {
+        console.log("API has already been called today");
+        // display the data
       } else {
-        return res.status(500).json({ error: 'Failed to fetch news' });
+          const news = await fetchAndSaveNews();
+        if (news) {
+          return res.json({ hasCalledToday: false, news });
+        } else {
+          return res.status(500).json({ error: 'Failed to fetch news' });
+        }
       }
+    } catch (err) {
+      console.error('API has been called error', err);
+      res.status(500).json({ error: 'API has been called error' });
     }
+    
+    
+
 });
 
 // Endpoint to force fetch news from API (e.g., button click)
@@ -92,7 +95,7 @@ app.post('/api/fetch-news', async (req, res) => {
 app.post('/api/like', async (req, res) => {
   const { article } = req.body;
   try {
-    await Pool.query(
+    await pool.query(
       'INSERT INTO likes (title, description) VALUES ($1, $2) ON CONFLICT (title) DO NOTHING',
       [article.title, article.description]
     );
@@ -107,7 +110,7 @@ app.post('/api/like', async (req, res) => {
 app.post('/api/dislike', async (req, res) => {
   const { article } = req.body;
   try {
-    await Pool.query(
+    await pool.query(
       'INSERT INTO dislikes (title, description) VALUES ($1, $2) ON CONFLICT (title) DO NOTHING',
       [article.title, article.description]
     );
@@ -123,7 +126,7 @@ app.post('/api/dislike', async (req, res) => {
 app.post('/api/read-later', async (req, res) => {
   const { article } = req.body;
   try {
-    await Pool.query(
+    await pool.query(
       'INSERT INTO read_later (title, description) VALUES ($1, $2) ON CONFLICT (title) DO NOTHING',
       [article.title, article.description]
     );
