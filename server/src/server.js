@@ -52,10 +52,11 @@ app.get('/api/has-called-today', async (req, res) => {
   // Check if the JSON file exists and is from today
   // JSONS will be deleted after placed into sql so why are you checking lol
 
-      // Get todays date and query it
+    // Get todays date and query it
     // PG gives dates like: "2025-06-23 15:11:16.973997"
     const today = date_converter(new Date());
     
+    // this will get way less efficient (I think) if it were scaled to large numbers
     const { rows } = await pool.query(
       `SELECT * 
         from snipr_articles 
@@ -65,27 +66,15 @@ app.get('/api/has-called-today', async (req, res) => {
 
     if (rows.length > 0) {
       console.log("API has already been called today");
+      // display the data
     } else {
-      fetchAndSaveNews();
+        const news = await fetchAndSaveNews();
+      if (news) {
+        return res.json({ hasCalledToday: false, news });
+      } else {
+        return res.status(500).json({ error: 'Failed to fetch news' });
+      }
     }
-
-  if (fs.existsSync(NEWS_JSON_PATH)) {
-    const stats = fs.statSync(NEWS_JSON_PATH);
-    const fileDate = new Date(stats.mtime);
-    {
-      // File is from today, return its contents
-      // dont need this. need to call data from db.
-      const news = JSON.parse(fs.readFileSync(NEWS_JSON_PATH, 'utf-8'));
-      return res.json({ hasCalledToday: true, news });
-    }
-  }
-  // If not, fetch from NewsAPI, save, and return
-  const news = await fetchAndSaveNews();
-  if (news) {
-    return res.json({ hasCalledToday: false, news });
-  } else {
-    return res.status(500).json({ error: 'Failed to fetch news' });
-  }
 });
 
 // Endpoint to force fetch news from API (e.g., button click)
