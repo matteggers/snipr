@@ -32,13 +32,19 @@ const NEWS_JSON_PATH = path.join(__dirname, `${fileDate}.json`);
 app.use(express.json()); // Add this to parse JSON bodies
 
 // ONLY CALL WHEN C&B HAVE BEEN CONDUCTED
-// Helper function to fetch news from NewsAPI and save to JSON
+// Helper function to fetch news from NewsAPI, save to JSON, and insert into DB
 async function fetchAndSaveNews() {
   try {
     const response = await axios.get(NEWS_API_URL);
-    const data = await response.data;
+    const data = response.data;
     fs.writeFileSync(NEWS_JSON_PATH, JSON.stringify(data, null, 2));
-    // TODO: Store in Postgres DB as well
+    // Insert each article into the DB
+    for (const article of data.articles) {
+      await pool.query(
+        'INSERT INTO snipr_articles (title, description, createdat) VALUES ($1, $2, NOW()) ON CONFLICT (title) DO NOTHING',
+        [article.title, article.description]
+      );
+    }
     return data;
   } catch (err) {
     console.error('Error fetching news:', err);
@@ -48,36 +54,27 @@ async function fetchAndSaveNews() {
 
 // Endpoint to check if API has been called today and return news
 app.get('/api/has-called-today', async (req, res) => {
-    // Get todays date and query it
-    // PG gives dates like: "2025-06-23 15:11:16.973997"
-
-    const today = date_converter(new Date());
-    try {
-      const { rows } = await pool.query(
-      // this will get way less efficient (I think) if it were scaled to large numbers
-      `SELECT * 
-      from snipr_articles 
-      WHERE DATE(createdat) = $1`, 
-      [ today ]
-      );
-      if (rows.length > 0) {
-        console.log("API has already been called today");
-        // display the data
+  const today = date_converter(new Date());
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM snipr_articles WHERE DATE(createdat) = $1`,
+      [today]
+    );
+    if (rows.length > 0) {
+      // Return today's articles from DB
+      return res.json({ hasCalledToday: true, news: { articles: rows } });
+    } else {
+      const news = await fetchAndSaveNews();
+      if (news) {
+        return res.json({ hasCalledToday: false, news });
       } else {
-          const news = await fetchAndSaveNews();
-        if (news) {
-          return res.json({ hasCalledToday: false, news });
-        } else {
-          return res.status(500).json({ error: 'Failed to fetch news' });
-        }
+        return res.status(500).json({ error: 'Failed to fetch news' });
       }
-    } catch (err) {
-      console.error('API has been called error', err);
-      res.status(500).json({ error: 'API has been called error' });
     }
-    
-    
-
+  } catch (err) {
+    console.error('API has been called error', err);
+    res.status(500).json({ error: 'API has been called error' });
+  }
 });
 
 // Endpoint to force fetch news from API (e.g., button click)
@@ -149,7 +146,7 @@ const date_converter = (js_date) => {
   const day = currentDate.getDate(); 
   const year = currentDate.getFullYear();
   month = (month < 10) ? ('0' + month) : month;
-
+  day = (day < 10) ? ('0' + day) : day;
   return (`${year}-${month}-${day}`);
 }
 
