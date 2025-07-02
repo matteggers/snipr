@@ -33,7 +33,9 @@ function App() {
 
   const handleFetchNews = async () => {
     setLoading(true);
-    const res = await fetch('/api/fetch-news', { method: 'POST' });
+    await fetch('/api/fetch-news', { method: 'POST' });
+    // After fetching, re-query for today's articles from the DB
+    const res = await fetch('/api/has-called-today');
     const data = await res.json();
     setNews(data.news);
     setHasCalledToday(true);
@@ -48,6 +50,11 @@ function App() {
       <main className="main-content">
         <div className='title'>
           <h1>{VIEW_TITLES[view]}</h1>
+        </div>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <button onClick={handleFetchNews} style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: '#4a4e69', color: '#fff', border: 'none', cursor: 'pointer' }}>
+            Fetch New News
+          </button>
         </div>
         {loading ? (
           <div>Loading...</div>
