@@ -15,21 +15,10 @@ const VIEW_TITLES: Record<string, string> = {
 function App() {
   const [hasCalledToday, setHasCalledToday] = useState<boolean | null>(null);
   const [news, setNews] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [view, setView] = useState<'all' | 'liked' | 'disliked' | 'readLater' | 'todays'>('todays');
 
   const { liked, disliked, readLater, handleLike, handleDislike, handleReadLater } = useArticleActions();
-
-  useEffect(() => {
-    // Fetch news from backend
-    fetch('/api/has-called-today')
-      .then(res => res.json())
-      .then(data => {
-        setHasCalledToday(data.hasCalledToday);
-        setNews(data.news);
-        setLoading(false);
-      });
-  }, []);
 
   const handleFetchNews = async () => {
     setLoading(true);
@@ -69,8 +58,8 @@ function App() {
             onReadLater={handleReadLater}
           />
         ) : (
-          <div>
-            <button onClick={handleFetchNews}>Fetch Today's News</button>
+          <div style={{ textAlign: 'center', color: '#676' }}>
+            Click "Fetch New News" to get today's tech headlines
           </div>
         )}
       </main>
