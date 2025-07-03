@@ -154,11 +154,8 @@ const date_converter = (js_date) => {
 
 
 /* 
-  Call {has it been called today}. If not, pull data, place into json, read from json onto screen, write into SQL DB. Take feedback from user.
-  TODO: If an article is disliked, remove it from user view
-  Dislike existing style. Shouldn't directly call the API when asked, should check if a file exists. Or some table? Investigate
-  UI also has "todays news" button on same screen that todays news is shown on. don't like that
-  Currently have runtime errors (ReacT), errors parsing json data (not even running node or pg lol)
-  // I didn't even include an author column lol
+  TODO:
+  Add: Author column to DB, read later column to db, 'read' column to db, more robust error handling, sql injection protection (not even needed this is a local project lol but good practice),
+  Also work on the frontend now bc of the json runtime error. Then work on the above features.
 
 */
