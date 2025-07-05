@@ -14,5 +14,5 @@ const Sidebar: React.FC<SidebarProps> = ({ setView }) => (
     <button onClick={() => setView('readLater')}>Read Later</button>
   </aside>
 );
-
+// add button for fetching.
 export default Sidebar; 
