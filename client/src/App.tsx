@@ -19,13 +19,18 @@ function App() {
   const [view, setView] = useState<'all' | 'liked' | 'disliked' | 'readLater' | 'todays'>('todays');
   const [testMode, setTestMode] = useState(false);
 
+  //console.log('Component rendered with view:', view);
+
   const { liked, disliked, readLater, handleLike, handleDislike, handleReadLater } = useArticleActions();
 
   const handleFetchNews = async () => {
+    /*alert('Button clicked!'); // Simple test to see if button works
+    console.log('handleFetchNews called!');
+    console.log('testMode:', testMode);*/
     setLoading(true);
     try {
       if (testMode) {
-        // Use test endpoint for local JSON
+        // In test mode (button), checks for 'test-news.json' and returns stuff as display
         console.log('Making request to /api/test-local');
         const res = await fetch('http://localhost:4000/api/test-local');
         console.log('Response status:', res.status);
@@ -45,21 +50,25 @@ function App() {
         setHasCalledToday(true);
       } else {
         // Normal flow: fetch from API, then get from DB
+        console.log('Making request to /api/fetch-news');
         const fetchRes = await fetch('http://localhost:4000/api/fetch-news', { method: 'POST' });
+        console.log('Response status:', fetchRes.status);
+        
         if (!fetchRes.ok) {
           throw new Error(`HTTP error! status: ${fetchRes.status}`);
         }
-        const res = await fetch('http://localhost:4000/api/has-called-today');
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
+        
+        const data = await fetchRes.json();
+        console.log('Received data:', data);
+        console.log('Data.news:', data.news);
+        console.log('Data.news.articles:', data.news?.articles);
+        
         setNews(data.news);
         setHasCalledToday(true);
       }
     } catch (error) {
       console.error('Fetch error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       alert(`Error fetching news: ${errorMessage}`);
     } finally {
       setLoading(false);
@@ -67,6 +76,9 @@ function App() {
   };
 
   const articlesToShow = filterArticles(news, liked, disliked, readLater, view);
+  console.log('Articles to show:', articlesToShow);
+  console.log('Current view:', view);
+  console.log('News state:', news);
 
   return (
     <div className="App app-flex">
@@ -76,7 +88,53 @@ function App() {
           <h1>{VIEW_TITLES[view]}</h1>
         </div>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <button onClick={handleFetchNews} style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: '#4a4e69', color: '#fff', border: 'none', cursor: 'pointer', marginRight: 10 }}>
+          <button 
+            onClick={() => alert('TEST BUTTON WORKS!')} 
+            style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: 'red', color: '#fff', border: 'none', cursor: 'pointer', marginRight: 10 }}
+          >
+            TEST BUTTON
+          </button>
+          <button 
+            onClick={() => {
+              console.log('Testing handleFetchNews directly...');
+              try {
+                handleFetchNews();
+              } catch (error) {
+                console.error('Error calling handleFetchNews:', error);
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                alert('Error: ' + errorMessage);
+              }
+            }} 
+            style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: 'blue', color: '#fff', border: 'none', cursor: 'pointer', marginRight: 10 }}
+          >
+            TEST FETCH FUNCTION
+          </button>
+          <button 
+            onClick={async () => {
+              console.log('Testing SQL articles endpoint...');
+              try {
+                const res = await fetch('http://localhost:4000/api/sql-articles');
+                const data = await res.json();
+                console.log('SQL articles:', data);
+                alert(`Found ${data.articles.length} articles in SQL DB`);
+              } catch (error) {
+                console.error('SQL articles error:', error);
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                alert('Error: ' + errorMessage);
+              }
+            }} 
+            style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: 'green', color: '#fff', border: 'none', cursor: 'pointer', marginRight: 10 }}
+          >
+            TEST SQL ARTICLES
+          </button>
+          <button 
+            onClick={() => {
+              console.log('Button clicked directly!');
+              alert('Direct button click works!');
+              handleFetchNews();
+            }} 
+            style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: '#4a4e69', color: '#fff', border: 'none', cursor: 'pointer', marginRight: 10 }}
+          >
             {testMode ? 'Load Test Data' : 'Fetch New News'}
           </button>
           <button 

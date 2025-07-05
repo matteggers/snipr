@@ -45,7 +45,21 @@ export function useArticleActions() {
 }
 
 export function filterArticles(news: any, liked: Article[], disliked: Article[], readLater: Article[], view: string): Article[] {
-  if (!news || !news.articles) return [];
+  console.log('filterArticles called with:');
+  console.log('news:', news);
+  console.log('news.articles:', news?.articles);
+  console.log('view:', view);
+  console.log('liked:', liked);
+  console.log('disliked:', disliked);
+  console.log('readLater:', readLater);
+  
+  if (!news || !news.articles) {
+    console.log('Returning empty array because news or news.articles is null/undefined');
+    return [];
+  }
+  
+  console.log('news.articles length:', news.articles.length);
+  
   if (view === 'todays') return news.articles;
   if (view === 'all') return news.articles;
   if (view === 'liked') return liked;

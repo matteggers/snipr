@@ -1,24 +1,21 @@
 require('dotenv').config();
 const express = require('express');
-const fetch = require('node-fetch'); // wont need this soon
 const axios = require('axios');
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const { readFromLocalJSON, getAllArticlesFromDB } = require('./utils/test-utils');
 const api_key = process.env.SECRET_KEY;
 const pg_user = process.env.PG_USER;
 const pg_pass = process.env.PG_PASS;
 const db_name = process.env.DB_NAME;
 
-// Debug: Log the API key (masked for security)
+// Debug if API key loads
 console.log('API Key loaded:', api_key ? `${api_key.substring(0, 8)}...` : 'NOT FOUND');
 console.log('API Key length:', api_key ? api_key.length : 0);
 
 const NEWS_API_URL = `https://newsapi.org/v2/top-headlines?country=us&category=technology&apiKey=${api_key}`;
-
-// Debug: Log the URL (without the key for security)
-console.log('NewsAPI URL (without key):', `https://newsapi.org/v2/top-headlines?country=us&category=technology&apiKey=[HIDDEN]`);
 
 const currentDate = new Date();
 const fileDate = currentDate.getFullYear() + '-' + currentDate.getDate(); // ex: YYYY-M-D, month doesnt automatically include leading zero for 0->9, same for day. 
@@ -96,31 +93,9 @@ async function fetchAndSaveNews() {
   }
 }
 
-// TEMPORARY: Helper function to read news from local JSON file (for testing)
-async function readFromLocalJSON() {
-  try {
-    // First try the date-based file
-    if (fs.existsSync(NEWS_JSON_PATH)) {
-      const data = JSON.parse(fs.readFileSync(NEWS_JSON_PATH, 'utf-8'));
-      console.log('Reading from date-based JSON file for testing');
-      return data;
-    } 
-    // Fallback to test file
-    else if (fs.existsSync(path.join(__dirname, 'test-news.json'))) {
-      const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'test-news.json'), 'utf-8'));
-      console.log('Reading from test-news.json for testing');
-      return data;
-    } else {
-      console.log('No local JSON files found');
-      return null;
-    }
-  } catch (err) {
-    console.error('Error reading local JSON:', err);
-    return null;
-  }
-}
 
-// TEMPORARY: Endpoint to read from local JSON (for testing)
+
+// Test endpoint to read from local JSON (for testing)
 app.get('/api/test-local', async (req, res) => {
   try {
     const news = await readFromLocalJSON();
@@ -181,7 +156,7 @@ app.post('/api/fetch-news', async (req, res) => {
     console.log('No articles found for today, fetching from API');
     const news = await fetchAndSaveNews();
     if (news) {
-      return res.json({ news });
+      return res.json({ news: { articles: news.articles } });
     } else {
       // Check if there's an error file we can read
       if (fs.existsSync(NEWS_JSON_PATH)) {
@@ -248,6 +223,17 @@ app.post('/api/read-later', async (req, res) => {
   }
 });
 
+// Test endpoint to read all articles from SQL DB
+app.get('/api/sql-articles', async (req, res) => {
+  try {
+    const result = await getAllArticlesFromDB(pool);
+    return res.json(result);
+  } catch (err) {
+    console.error('SQL articles error:', err);
+    return res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
@@ -257,7 +243,7 @@ const date_converter = (js_date) => {
   // JS gives dates like: 2025-6-1. Need leading zeros for months and dates
   const currentDate = new Date();
   let month = currentDate.getMonth() + 1; // given as 0-11
-  const day = currentDate.getDate(); 
+  let day = currentDate.getDate(); 
   const year = currentDate.getFullYear();
   month = (month < 10) ? ('0' + month) : month;
   day = (day < 10) ? ('0' + day) : day;
@@ -269,7 +255,6 @@ const date_converter = (js_date) => {
 
 /* 
   TODO:
-  Add: Author column to DB, read later column to db, 'read' column to db, more robust error handling, sql injection protection (not even needed this is a local project lol but good practice),
-  Also work on the frontend now bc of the json runtime error. Then work on the above features.
-
+  When articles come up, make them clickable. Provide the rest of the content (api limits to 200 characters)
+  Then scrape the website for content and put through a local LLM
 */
