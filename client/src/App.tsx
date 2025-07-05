@@ -17,18 +17,53 @@ function App() {
   const [news, setNews] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<'all' | 'liked' | 'disliked' | 'readLater' | 'todays'>('todays');
+  const [testMode, setTestMode] = useState(false);
 
   const { liked, disliked, readLater, handleLike, handleDislike, handleReadLater } = useArticleActions();
 
   const handleFetchNews = async () => {
     setLoading(true);
-    await fetch('/api/fetch-news', { method: 'POST' });
-    // After fetching, re-query for today's articles from the DB
-    const res = await fetch('/api/has-called-today');
-    const data = await res.json();
-    setNews(data.news);
-    setHasCalledToday(true);
-    setLoading(false);
+    try {
+      if (testMode) {
+        // Use test endpoint for local JSON
+        console.log('Making request to /api/test-local');
+        const res = await fetch('http://localhost:4000/api/test-local');
+        console.log('Response status:', res.status);
+        console.log('Response headers:', res.headers);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const text = await res.text();
+        console.log('Response text:', text);
+        
+        const data = JSON.parse(text);
+        console.log('Parsed data:', data);
+        
+        setNews(data.news);
+        setHasCalledToday(true);
+      } else {
+        // Normal flow: fetch from API, then get from DB
+        const fetchRes = await fetch('http://localhost:4000/api/fetch-news', { method: 'POST' });
+        if (!fetchRes.ok) {
+          throw new Error(`HTTP error! status: ${fetchRes.status}`);
+        }
+        const res = await fetch('http://localhost:4000/api/has-called-today');
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        setNews(data.news);
+        setHasCalledToday(true);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Error fetching news: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const articlesToShow = filterArticles(news, liked, disliked, readLater, view);
@@ -41,9 +76,28 @@ function App() {
           <h1>{VIEW_TITLES[view]}</h1>
         </div>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <button onClick={handleFetchNews} style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: '#4a4e69', color: '#fff', border: 'none', cursor: 'pointer' }}>
-            Fetch New News
+          <button onClick={handleFetchNews} style={{ padding: '10px 24px', fontSize: '1rem', borderRadius: 6, background: '#4a4e69', color: '#fff', border: 'none', cursor: 'pointer', marginRight: 10 }}>
+            {testMode ? 'Load Test Data' : 'Fetch New News'}
           </button>
+          <button 
+            onClick={() => setTestMode(!testMode)} 
+            style={{ 
+              padding: '8px 16px', 
+              fontSize: '0.9rem', 
+              borderRadius: 4, 
+              background: testMode ? '#e74c3c' : '#27ae60', 
+              color: '#fff', 
+              border: 'none', 
+              cursor: 'pointer' 
+            }}
+          >
+            {testMode ? 'Exit Test Mode' : 'Test Mode'}
+          </button>
+          {testMode && (
+            <div style={{ marginTop: 8, fontSize: '0.8rem', color: '#666' }}>
+              Test Mode: Using local JSON data
+            </div>
+          )}
         </div>
         {loading ? (
           <div>Loading...</div>
@@ -58,8 +112,8 @@ function App() {
             onReadLater={handleReadLater}
           />
         ) : (
-          <div style={{ textAlign: 'center', color: '#676' }}>
-            Click "Fetch New News" to get today's tech headlines
+          <div style={{ textAlign: 'center', color: '#666' }}>
+            Click "{testMode ? 'Load Test Data' : 'Fetch New News'}" to get today's tech headlines
           </div>
         )}
       </main>

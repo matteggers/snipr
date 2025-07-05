@@ -5,6 +5,7 @@ const axios = require('axios');
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
 const api_key = process.env.SECRET_KEY;
 const pg_user = process.env.PG_USER;
 const pg_pass = process.env.PG_PASS;
@@ -29,6 +30,7 @@ const pool = new Pool({
 });
 const NEWS_JSON_PATH = path.join(__dirname, `${fileDate}.json`);
 
+app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Add this to parse JSON bodies
 
 // ONLY CALL WHEN C&B HAVE BEEN CONDUCTED
@@ -51,6 +53,45 @@ async function fetchAndSaveNews() {
     return null;
   }
 }
+
+// TEMPORARY: Helper function to read news from local JSON file (for testing)
+async function readFromLocalJSON() {
+  try {
+    // First try the date-based file
+    if (fs.existsSync(NEWS_JSON_PATH)) {
+      const data = JSON.parse(fs.readFileSync(NEWS_JSON_PATH, 'utf-8'));
+      console.log('Reading from date-based JSON file for testing');
+      return data;
+    } 
+    // Fallback to test file
+    else if (fs.existsSync(path.join(__dirname, 'test-news.json'))) {
+      const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'test-news.json'), 'utf-8'));
+      console.log('Reading from test-news.json for testing');
+      return data;
+    } else {
+      console.log('No local JSON files found');
+      return null;
+    }
+  } catch (err) {
+    console.error('Error reading local JSON:', err);
+    return null;
+  }
+}
+
+// TEMPORARY: Endpoint to read from local JSON (for testing)
+app.get('/api/test-local', async (req, res) => {
+  try {
+    const news = await readFromLocalJSON();
+    if (news) {
+      return res.json({ hasCalledToday: true, news });
+    } else {
+      return res.status(404).json({ error: 'No local news file found' });
+    }
+  } catch (err) {
+    console.error('Test endpoint error:', err);
+    return res.status(500).json({ error: 'Server error reading test data' });
+  }
+});
 
 // Endpoint to check if API has been called today and return news
 app.get('/api/has-called-today', async (req, res) => {

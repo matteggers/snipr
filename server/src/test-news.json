@@ -1,0 +1,27 @@
+{
+  "status": "ok",
+  "totalResults": 3,
+  "articles": [
+    {
+      "title": "Test Article 1: AI Breakthrough",
+      "description": "This is a test article about artificial intelligence making significant progress in natural language processing.",
+      "author": "Test Author 1",
+      "url": "https://example.com/test1",
+      "publishedAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "title": "Test Article 2: Quantum Computing",
+      "description": "A test article discussing recent developments in quantum computing technology and its potential applications.",
+      "author": "Test Author 2",
+      "url": "https://example.com/test2",
+      "publishedAt": "2024-01-15T11:00:00Z"
+    },
+    {
+      "title": "Test Article 3: Cybersecurity",
+      "description": "Test article covering the latest cybersecurity threats and best practices for protecting digital assets.",
+      "author": "Test Author 3",
+      "url": "https://example.com/test3",
+      "publishedAt": "2024-01-15T12:00:00Z"
+    }
+  ]
+} 
