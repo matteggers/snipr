@@ -257,4 +257,5 @@ const date_converter = (js_date) => {
   TODO:
   When articles come up, make them clickable. Provide the rest of the content (api limits to 200 characters)
   Then scrape the website for content and put through a local LLM
+  Store last fetch time somewhere (and if successful), then check through that as opposed to checking db. Store in order of most recent as first.
 */
