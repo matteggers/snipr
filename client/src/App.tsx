@@ -3,6 +3,7 @@ import './App.css';
 import Sidebar from './Sidebar';
 import ArticleList from './ArticleList';
 import { filterArticles, useArticleActions } from './articleUtils';
+import { fetchArticleById } from './utils/api';
 
 const VIEW_TITLES: Record<string, string> = {
   todays: "Today's Tech News",
@@ -18,13 +19,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<'all' | 'liked' | 'disliked' | 'readLater' | 'todays'>('todays');
   const [testMode, setTestMode] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   //console.log('Component rendered with view:', view);
 
   const { liked, disliked, readLater, handleLike, handleDislike, handleReadLater } = useArticleActions();
 
   const handleFetchNews = async () => {
-    /*alert('Button clicked!'); // Simple test to see if button works
+    /*
     console.log('handleFetchNews called!');
     console.log('testMode:', testMode);*/
     setLoading(true);
@@ -182,6 +184,10 @@ function App() {
 export default App;
 
 /*
+
+  HEY!!!! Add this to the website so if someone tries to call API and it has been called today, it will post notification:
+  https://www.npmjs.com/package/react-toastify
+
   Visual: 
   Today's Tech News - centered large text
   check if checked for tech news so far
