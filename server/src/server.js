@@ -1,3 +1,5 @@
+import { date_converter, file_dates } from './utils/dateUtil';
+
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
@@ -11,14 +13,18 @@ const pg_user = process.env.PG_USER;
 const pg_pass = process.env.PG_PASS;
 const db_name = process.env.DB_NAME;
 
+
 // Debug if API key loads
 console.log('API Key loaded:', api_key ? `${api_key.substring(0, 8)}...` : 'NOT FOUND');
 console.log('API Key length:', api_key ? api_key.length : 0);
 
 const NEWS_API_URL = `https://newsapi.org/v2/top-headlines?country=us&category=technology&apiKey=${api_key}`;
 
-const currentDate = new Date();
-const fileDate = currentDate.getFullYear() + '-' + currentDate.getDate(); // ex: YYYY-M-D, month doesnt automatically include leading zero for 0->9, same for day. 
+//const currentDate = new Date();
+//const fileDate = currentDate.getFullYear() + '-' + currentDate.getDate(); // ex: YYYY-M-D, month doesnt automatically include leading zero for 0->9, same for day. 
+
+const fileDate = file_dates();
+
 
 const app = express();
 const port = process.env.PORT || 4000; // port for node server
@@ -258,4 +264,10 @@ const date_converter = (js_date) => {
   When articles come up, make them clickable. Provide the rest of the content (api limits to 200 characters)
   Then scrape the website for content and put through a local LLM
   Store last fetch time somewhere (and if successful), then check through that as opposed to checking db. Store in order of most recent as first.
+
+
+  _____
+  Pull article titles into list on button click. SQL pull when clicked on
+  Also, imagine 2 people interacting at the same time on website, if all action happens in backend, can have race conditions and/or issues with displaying. 
+  
 */
