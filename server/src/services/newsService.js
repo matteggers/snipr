@@ -1,12 +1,11 @@
 
-// import stuff
+import { fileUtils } from '../utils/fileUtil.js';
 import { Article } from './databaseService.js';
 const axios = require('axios'); 
 require('dotenv').config();
 const NEWS_API_URL = `https://newsapi.org/v2/top-headlines?country=us&category=technology&apiKey=${process.env.SECRET_KEY}`;
 
 // need file utility
-
 
 async function fetchAndSaveNews() {
   try {
@@ -18,12 +17,12 @@ async function fetchAndSaveNews() {
     if (data.status === 'error') {
       console.error('NewsAPI error:', data.message);
       // Save the error response to JSON for debugging
-      fs.writeFileSync(NEWS_JSON_PATH, JSON.stringify(data, null, 2));
+      fileUtils.saveNewsToFile(data);
       return null;
     }
     
     console.log('Successfully fetched news, saving to JSON...');
-    fs.writeFileSync(NEWS_JSON_PATH, JSON.stringify(data, null, 2));
+    fileUtils.saveNewsToFile(data);
     
     //console.log('Inserting articles into database...');
     for (const article of data.articles) {
@@ -51,7 +50,7 @@ async function fetchAndSaveNews() {
       } : null
     };
     
-    fs.writeFileSync(NEWS_JSON_PATH, JSON.stringify(errorData, null, 2));
+    fileUtils.saveNewsToFile(data);
     return null;
   }
 }
