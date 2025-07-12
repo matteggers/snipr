@@ -1,14 +1,17 @@
-import { date_converter } from './dateUtil';
+import { date_converter, file_date } from './dateUtil.js';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import path from 'path';
 
-const fs = require('fs');
-const path = require('path');
 
-// handle json saving here
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-class fileUtils {
+export class fileUtils {
     static saveNewsToFile(data) {
         try {
-            const fileDate = file_date();
+            const fileDate = file_date(); 
             const filePath = path.join(__dirname, `${fileDate}.json`);
             fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
         } catch (err) {
@@ -17,6 +20,5 @@ class fileUtils {
     }
 };
 
-module.exports = { fileUtils };
 
 // File Date and File Path handled here. To be used by services so none of this occurs in the the server.js file

@@ -1,13 +1,12 @@
-
 import { fileUtils } from '../utils/fileUtil.js';
 import { Article } from './databaseService.js';
-const axios = require('axios'); 
-require('dotenv').config();
+import dotenv from 'dotenv'; 
+dotenv.config();
 const NEWS_API_URL = `https://newsapi.org/v2/top-headlines?country=us&category=technology&apiKey=${process.env.SECRET_KEY}`;
 
 // need file utility
 
-async function fetchAndSaveNews() {
+export async function fetchAndSaveNews() {
   try {
     
     const response = await axios.get(NEWS_API_URL);
@@ -55,4 +54,3 @@ async function fetchAndSaveNews() {
   }
 }
 
-module.exports = { fetchAndSaveNews };
