@@ -1,4 +1,4 @@
-import { date_converter, file_date } from './dateUtil.js';
+import { date_converter, standardizeDate } from './dateUtil.js';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 export class fileUtils {
     static saveNewsToFile(data) {
         try {
-            const fileDate = file_date(); 
+            const fileDate = standardizeDate(); 
             const filePath = path.join(__dirname, `${fileDate}.json`);
             fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
         } catch (err) {

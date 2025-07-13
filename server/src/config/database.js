@@ -14,4 +14,13 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
+// Test the connection
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('Database connection failed:', err);
+  } else {
+    console.log('Database connected successfully');
+  }
+});
+
 export default pool;

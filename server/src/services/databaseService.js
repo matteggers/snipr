@@ -3,12 +3,11 @@ import pool from '../config/database.js';
 // Eventually replace with toast notifications so user can see this
 
 export class Article {
-    //create
-    static async create(title, description, content, LINK, author) {
+    static async create(title, description, author, source, url, content, published_at) {
         try {
             const { rows } = await pool.query(
-            'Insert INTO articles (title, description, content, LINK, author) VALUES ($1, $2, $3, $4, NOW()) RETURNING *',
-            [title, description, content, LINK, author]
+            'INSERT INTO articles (title, description, author, source, url, content, published_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *',
+            [title, description, author, source, url, content, published_at]
         );
         return rows[0];
         } catch (err) {
@@ -27,6 +26,7 @@ export class Article {
         return rows;
         } catch (err) {
             console.log("Couldn't find article by date: ", err);
+            return [];
         }
         
     }

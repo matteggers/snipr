@@ -18,6 +18,10 @@ app.use('/api/news', newsRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  console.log('Environment variables check:');
+  console.log('SECRET_KEY exists:', !!process.env.SECRET_KEY);
+  console.log('SECRET_KEY length:', process.env.SECRET_KEY ? process.env.SECRET_KEY.length : 'N/A');
+  console.log('SECRET_KEY first 10 chars:', process.env.SECRET_KEY ? process.env.SECRET_KEY.substring(0, 10) + '...' : 'N/A');
 });
 
 

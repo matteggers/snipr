@@ -11,10 +11,10 @@ const date_converter = () => {
   return (`${year}-${month}-${day}`);
 }
 
-const file_date = () => {
+const standardizeDate = () => {
     const now = new Date();
     const isoString = now.toISOString();
     return isoString.split('T')[0]; // YYYY-MM-DD
 }
 
-module.exports = { date_converter, file_date };
+export { date_converter, standardizeDate };
