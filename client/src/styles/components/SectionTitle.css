@@ -1,0 +1,10 @@
+.header {
+    display: flex;
+    background-color: #FCF5E5;
+    padding: 2rem;
+    flex-direction: column;
+}
+
+.title {
+    text-decoration: underline;
+}
