@@ -1,6 +1,6 @@
 ### Snipr – Snippets of Tech News
 
-A local tech-news aggregator. Fetches today’s articles, stores them in PostgreSQL, and lets you like, dislike, or save for later.
+A local tech-news aggregator. Fetches today’s articles from the NewsAPI, stores them in PostgreSQL, and lets you like, dislike, or save for later.
 
 ### Prerequisites
 - Node.js ≥ 14  
@@ -60,41 +60,23 @@ Also need to setup your pg db and make an env file with the username, password, 
 
 
 
-# Burnout
+### Burnout
 Although this project isn't massive, I realized I wouldn't actually use this tool. Although demotivated, I continued. Learned a lot about file structuring, making code modular so it doesn't break (look at first few commits, went with a monofile approach lol), querying to a database and errors that occur (server can still take duplicate articles from api and save them, my db has 750 rows and most are from the same api pull). Learned about routes and how single page applications work. Learned a lot about state management in React.
 Intend on rewriting this, very tired right now.
 
 Tech used: Node, PostgreSQL, React, TailwindCSS.
 
 
+### Future features
+* Web scrape the rest of the article to display the whole thing.
+* Connect a local LLM to summarize it
+* Search
+* Model trained on my preferences and can highlight articles that I may like (even if they typically exist outside of my interests, which traditionally would become hidden)
+
+For now, the project is not being actively developed. When I run out of other ideas I find more interesting, I may revisit this. If you are interested in further developing, fork it and shoot a PR my way. Thank you for reading this far.
+
+There are currently multiple issues, including checking for duplicate articles before inserting into db, network errors that go away after refresh, and more. This is not my best work, but rather a rough introduction to web development and popular technologies used by others. 
 
 
 
 
-in development
-
-Snipr is a locally hosted RSS feed utilizing the News API. I intend on adding preferences and using scraping tools like Beautiful Soup to grab an entire article, and summarize it using LLMS (going to attempt to get accurate results). Articles are stored in a PostgreSQL database and the API will only pull once per day. As a consequence of the API, articles only are visible the day after their posting. Along with this, I hope to add persistence across a network, such that it is visible from any device connected to the host's network, but I'm taking this one thing at a time, and this is not my only project.
-
-Light technical overview:
-1. Create PG DB if not exist
-2. Manually request todays articles. (Currently checks if there are articles in DB with matching date, if so, do not pull from API)'
-3. Article titles and descriptions show up below.
-4. Can like, dislike, or add to "read later". Selectable buttons on taskbar to see.
-
-Goals:
-1. Include full article + LLM summary as a menu expansion to article on page
-2. Add persistence across the network.
-3. Scan articles through a filter that knows my preferences, and delists articles based on whether I would like to see it (e.g. let's say I never wanted to see articles on the oura 'aura' 'oora' whatever ring, it could figure that out based on dislikes or if it was ever read)
-4. Add search feature
-5. Make it easily usable by those in as few steps and technical knowledge as possible.
-
-Currently working on:
-Refactoring front-end
-Fixing DB saving stuff
-Then all my goals :)
-
-Hope to use this on a raspberry pi 4b I've had sitting around with nothing to do. I always have these big plans for SBCs but don't end up getting around to it because of all the other associated costs. Wanted one of the new jetson orin nano super but with the out-of-stock issues I haven't had the chance. Have some really cool plans for that thing once I shell out the money for it.
-
-
-have to automate install of stuff or use docker (i think?)
-api key goes in .env file within server/src
