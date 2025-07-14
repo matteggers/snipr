@@ -64,7 +64,7 @@ Also need to setup your pg db and make an env file with the username, password, 
 Although this project isn't massive, I realized I wouldn't actually use this tool. Although demotivated, I continued. Learned a lot about file structuring, making code modular so it doesn't break (look at first few commits, went with a monofile approach lol), querying to a database and errors that occur (server can still take duplicate articles from api and save them, my db has 750 rows and most are from the same api pull). Learned about routes and how single page applications work. Learned a lot about state management in React.
 Intend on rewriting this, very tired right now.
 
-Tech used: Node, PostgreSQL, React, TailwindCSS.
+Tech used: Node, PostgreSQL, React, TailwindCSS. NewsAPI (a REST API)
 
 
 ### Future features
