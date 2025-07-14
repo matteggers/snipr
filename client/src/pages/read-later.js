@@ -1,12 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SectionTitle } from '../components/SectionTitle';
+import { ArticleCard } from '../components/ArticleCard.js';
+import { useArticles } from '../hooks/useArticles.js';
+
 function ReadLaterPage() {
+  const { articles, loading, error } = useArticles();
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  // Filter articles that are marked as read later
+  const readLaterArticles = articles.filter(article => {
+    const actions = JSON.parse(localStorage.getItem(`article-actions-${article.id}`) || '{}');
+    return actions.readLater;
+  });
+
   return (
     <div>
       <SectionTitle name="Read Later" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
+        {readLaterArticles.map((article, index) => (
+          <ArticleCard
+            key={article.id || index}
+            id={article.id}
+            title={article.title}
+            description={article.description}
+          />
+        ))}
+      </div>
     </div>
   );
 }
-
 
 export default ReadLaterPage;

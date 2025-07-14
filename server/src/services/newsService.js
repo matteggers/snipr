@@ -31,27 +31,35 @@ export async function fetchAndSaveNews() {
       console.log('Successfully fetched news, saving to JSON...');
       fileUtils.saveNewsToFile(data);
       
-      //console.log('Inserting articles into database...');
+      // Insert articles into database with detailed logging
+      let insertCount = 0;
+      console.log(`Attempting to insert ${data.articles.length} articles into the database...`);
       for (const article of data.articles) {
         try {
-          await Article.create(
+          const inserted = await Article.create(
             article.title, 
             article.description || 'Unknown', 
             article.author || 'Unknown', 
             article.source?.name || 'Unknown', 
             article.url, 
-            article.content, 
+            article.content || '', 
             article.publishedAt
-          )
-          console.log('Successfully inserted article:', article.title);
+          );
+          if (inserted) {
+            insertCount++;
+            console.log('Successfully inserted article:', inserted.title);
+          } else {
+            console.log('Insert returned null for article:', article.title);
+          }
         } catch (dbError) {
           console.error('Database insertion error for article:', article.title, dbError);
         }
       }
+      console.log(`Inserted ${insertCount} articles out of ${data.articles.length}`);
       console.log('Successfully saved to database');
       // Return articles from database instead of NewsAPI response
       try {
-        const dbArticles = await Article.findByDate(standardizeDate());
+        const dbArticles = await Article.findAll();
         console.log('Retrieved articles from database:', dbArticles.length);
         return dbArticles;
       } catch (dbError) {
@@ -73,11 +81,13 @@ export async function fetchAndSaveNews() {
         } : null
       };
       
-      fileUtils.saveNewsToFile(data);
+      fileUtils.saveNewsToFile(errorData);
       return null;
     }
   } else {
     console.log("NewsAPI already called, returning articles from database");
-    return await Article.findByDate(standardizeDate());
+    const dbArticles = await Article.findAll();
+    console.log('Articles found for today:', dbArticles.length);
+    return dbArticles;
   }
 }

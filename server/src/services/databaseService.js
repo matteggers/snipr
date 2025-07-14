@@ -6,7 +6,7 @@ export class Article {
     static async create(title, description, author, source, url, content, published_at) {
         try {
             const { rows } = await pool.query(
-            'INSERT INTO articles (title, description, author, source, url, content, published_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *',
+            'INSERT INTO articles (title, description, author, source, url, content, published_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) ON CONFLICT (url) DO NOTHING RETURNING *',
             [title, description, author, source, url, content, published_at]
         );
         return rows[0];
@@ -62,6 +62,7 @@ export class Article {
             'UPDATE articles SET likes = likes + 1 WHERE id = $1 RETURNING *',
             [id]
         );
+            return rows[0];
         } catch (err) {
             console.log("Couldn't increment likes: ", err);
         }
@@ -73,6 +74,7 @@ export class Article {
             'UPDATE articles SET dislikes = dislikes + 1 WHERE id = $1 RETURNING *',
             [id]
         );
+            return rows[0];
         } catch (err) {
             console.log("Couldn't decrement dislikes: ", err);
         }
@@ -84,6 +86,7 @@ export class Article {
             'UPDATE articles SET read_later = true WHERE id = $1 RETURNING *',
             [id]
         );
+            return rows[0];
         } catch (err) {
             console.log("Couldn't set this article to read later: ", err);
         }

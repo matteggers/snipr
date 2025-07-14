@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS articles (
     dislikes INT DEFAULT 0,
     read_later BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
-    published_at TEXT NOT NULL
+    published_at TEXT NOT NULL,
+    CONSTRAINT unique_url UNIQUE (url)
 );

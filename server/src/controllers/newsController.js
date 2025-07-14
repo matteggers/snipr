@@ -6,6 +6,13 @@ import { Article } from '../services/databaseService.js';
 
 export const newsController = {
   async getTodaysNews(req, res) {
+    console.log("HIT /api/news/ route");
+    // Timeout fallback: send error if no response in 5 seconds
+    setTimeout(() => {
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, message: "Timeout: No response from handler" });
+      }
+    }, 5000);
     try {
       console.log("CONTROLLER: Starting getTodaysNews");
       const result = await fetchAndSaveNews();
@@ -52,7 +59,7 @@ export const newsController = {
   async readLater(req, res) {
     try {
       const articleId = req.params.id;
-      const result = await Article.readLater(articleId);
+      const result = await Article.setReadLater(articleId);
       if (result) {
         res.status(200).json({ success: true });
       } else {
