@@ -48,14 +48,14 @@ Also need to setup your pg db and make an env file with the username, password, 
 
 ## Screenshots
 
-# Home Page w/ Articles
-![Home page of snipr](https://github.com/matteggers/snipr/images/home_page.png)
+### Home Page w/ Articles
+![Home page of snipr](./images/home_page.png)
 
-# Likes Page
-![Likes page of snipr](https://github.com/matteggers/snipr/images/liked.png)
+### Likes Page
+![Likes page of snipr](./images/liked.png)
 
-#Read Later
-![Read later page of snipr](https://github.com/matteggers/snipr/images/read_later.png)
+### Read Later
+![Read later page of snipr](./images/read_later.png)
 
 
 
